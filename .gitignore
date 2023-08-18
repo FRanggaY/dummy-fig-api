@@ -2,3 +2,8 @@
 .pytest_cache
 .env
 alembic.ini
+notes.txt
+
+private.pem
+private-refresh.pem
+public.pem

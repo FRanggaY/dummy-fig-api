@@ -10,7 +10,7 @@ router = APIRouter()
 
 not_found_message =  "User not found"
 
-@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(user_create: UserCreate, db: Session = Depends(get_db)):
     """
         Create a new user
@@ -36,7 +36,7 @@ def create_user(user_create: UserCreate, db: Session = Depends(get_db)):
     )
     return user_response
 
-@router.get("/", response_model=UserResponse, status_code=status.HTTP_200_OK)
+@router.get("", response_model=UserResponse, status_code=status.HTTP_200_OK)
 def read_all_user(
     user_status: UserStatusParamCustom,
     db: Session = Depends(get_db)

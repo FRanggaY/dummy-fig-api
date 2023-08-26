@@ -8,7 +8,7 @@ from app.database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(String, primary_key=True, index=True, default=str(uuid.uuid4()), server_default='uuid_generate_v4()')
+    id = Column(String, primary_key=True, index=True)
     username = Column(String(50), unique=True)
     email = Column(String(50), unique=True)
     hashed_password = Column(String(512), nullable=False)

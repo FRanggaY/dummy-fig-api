@@ -14,3 +14,6 @@ class UserResponsePagination(UserResponse):
 
 class AuthResponse(BaseResponse):
     data: Optional[Union[dict, list]]
+
+class ArticleResponse(BaseResponse):
+    data: Optional[Union[dict, list]]

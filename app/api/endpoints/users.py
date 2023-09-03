@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dtos.user import UserCreate, UserEdit
@@ -27,14 +28,16 @@ def create_user(user_create: UserCreate, db: Session = Depends(get_db)):
 
     user_store = user_service.create_user(user_create)
 
+    status_code = status.HTTP_201_CREATED
     user_response = UserResponse(
-        code=status.HTTP_201_CREATED,
+        code=status_code,
         status="CREATED",
         data={
             'id': user_store.id
         },
     )
-    return user_response
+    response = JSONResponse(content=user_response.model_dump(), status_code=status_code)
+    return response
 
 @router.get("", response_model=UserResponse, status_code=status.HTTP_200_OK)
 def read_all_user(
@@ -49,20 +52,23 @@ def read_all_user(
     users = user_service.read_all_user(user_status)
 
     if len(users) == 0:
+        status_code = status.HTTP_404_NOT_FOUND
         user_response = UserResponse(
-            code=status.HTTP_404_NOT_FOUND,
+            code=status_code,
             status="NOT FOUND",
             data={
                 'message': "Users not found"
             },
         )
     else:
+        status_code = status.HTTP_200_OK
         user_response = UserResponse(
-            code=status.HTTP_200_OK,
+            code=status_code,
             status="OK",
             data=users,
         )
-    return user_response
+    response = JSONResponse(content=user_response.model_dump(), status_code=status_code)
+    return response
 
 @router.get("/{id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
 def read_user(
@@ -77,16 +83,18 @@ def read_user(
     user = user_service.read_user(id)
 
     if user is None:
+        status_code = status.HTTP_404_NOT_FOUND
         user_response = UserResponse(
-            code=status.HTTP_404_NOT_FOUND,
+            code=status_code,
             status="NOT FOUND",
             data={
                 'message': not_found_message
             },
         )
     else:
+        status_code = status.HTTP_200_OK
         user_response = UserResponse(
-            code=status.HTTP_200_OK,
+            code=status_code,
             status="OK",
             data={
                 'id': user.id,
@@ -94,7 +102,8 @@ def read_user(
                 'status': user.status
             },
         )
-    return user_response
+    response = JSONResponse(content=user_response.model_dump(), status_code=status_code)
+    return response
 
 @router.patch("/{id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
 def update_user(id: str, user_edit: UserEdit, db: Session = Depends(get_db)):
@@ -114,22 +123,25 @@ def update_user(id: str, user_edit: UserEdit, db: Session = Depends(get_db)):
     user = user_service.update_user(user_edit, id)
 
     if user == '':
+        status_code = status.HTTP_404_NOT_FOUND
         user_response = UserResponse(
-            code=status.HTTP_404_NOT_FOUND,
+            code=status_code,
             status="NOT FOUND",
             data={
                 'message': not_found_message
             },
         )
     else:
+        status_code = status.HTTP_200_OK
         user_response = UserResponse(
-            code=status.HTTP_200_OK,
+            code=status_code,
             status="OK",
             data={
                 'id': user.id,
             },
         )
-    return user_response
+    response = JSONResponse(content=user_response.model_dump(), status_code=status_code)
+    return response
 
 @router.delete("/{id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
 def delete_user(
@@ -144,19 +156,22 @@ def delete_user(
     user_id = user_service.delete_user(id)
 
     if user_id == '':
+        status_code = status.HTTP_404_NOT_FOUND
         user_response = UserResponse(
-            code=status.HTTP_404_NOT_FOUND,
+            code=status_code,
             status="NOT FOUND",
             data={
                 'message': not_found_message
             },
         )
     else:
+        status_code = status.HTTP_200_OK
         user_response = UserResponse(
-            code=status.HTTP_200_OK,
+            code=status_code,
             status="OK",
             data={
                 'id': user_id,
             },
         )
-    return user_response
+    response = JSONResponse(content=user_response.model_dump(), status_code=status_code)
+    return response

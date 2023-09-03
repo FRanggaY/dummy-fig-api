@@ -28,7 +28,7 @@ def auth_login(auth_login: AuthLogin, db: Session = Depends(get_db)):
     expired_at = auth_data.get('access_token_expired_at', None)
     status_code = status.HTTP_200_OK
 
-    user_response = AuthResponse(
+    auth_response = AuthResponse(
         code=status_code,
         status="OK",
         data={
@@ -38,7 +38,7 @@ def auth_login(auth_login: AuthLogin, db: Session = Depends(get_db)):
             'expired_at': expired_at
         },
     )
-    response = JSONResponse(content=user_response.model_dump(), status_code=status_code)
+    response = JSONResponse(content=auth_response.model_dump(), status_code=status_code)
     response.set_cookie("access_token", access_token, max_age=expired_at * 60)
     return response
 

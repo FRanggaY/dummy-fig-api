@@ -16,7 +16,7 @@ result_not_allow =  'not allowed'
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_article(
-    title: str = Form(..., regex=r'^[a-zA-Z0-9\s]+$'),
+    title: str = Form(..., pattern=r'^[a-zA-Z0-9\s]+$'),
     lang: ArticleLangParam = Form(...),
     headline: str = Form(None),
     description: str = Form(None),
@@ -221,7 +221,7 @@ def change_article_status(
 
     article = article_service.change_article_status(article_id, article_status)
 
-    if article == '':
+    if article == '' or not article:
         status_code = status.HTTP_404_NOT_FOUND
         article_response = ArticleResponse(
             code=status.HTTP_404_NOT_FOUND,
@@ -246,7 +246,7 @@ def change_article_status(
 def update_article(
     request: Request,
     article_id: str,
-    title: str = Form(..., regex=r'^[a-zA-Z0-9\s]+$'),
+    title: str = Form(..., pattern=r'^[a-zA-Z0-9\s]+$'),
     lang: ArticleLangParam = Form(...),
     headline: str = Form(None),
     description: str = Form(None),
@@ -328,7 +328,6 @@ def delete_article_image(
     article_service = ArticleService(db, request)
 
     article_id = article_service.delete_article_image(article_id)
-
     if article_id == '':
         status_code = status.HTTP_404_NOT_FOUND
         article_response = ArticleResponse(
@@ -342,7 +341,7 @@ def delete_article_image(
         status_code = status.HTTP_403_FORBIDDEN
         article_response = ArticleResponse(
             code=status.HTTP_403_FORBIDDEN,
-            status="NOT FOUND",
+            status="FORBIDDEN",
             data={
                 'message': 'only allow delete with status flagged or archived'
             },

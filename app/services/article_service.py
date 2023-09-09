@@ -70,6 +70,8 @@ class ArticleService:
         if article and article.status in ('draft', 'flagged'):
             article_id = self.article_repository.delete_article_image(article_id)
             return article_id
+        elif not article:
+            return ''
         else:
             return 'not allowed'
 

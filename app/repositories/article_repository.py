@@ -47,7 +47,7 @@ class ArticleRepository:
 
     def read_article_by_slug(self, article_slug: str, content_image_location: str = False) -> Article:
         article = self.db.query(Article).filter(Article.slug == article_slug).one_or_none()
-        if content_image_location:
+        if article and content_image_location:
             # initial article image
             article.images = []
             if article:
@@ -85,8 +85,7 @@ class ArticleRepository:
         if not article:
             return ''
 
-        # Check status of article (draft and flagged)
-        if article.status not in ('draft', 'flagged'):
+        if article.status in ('published', 'archived'):
             return 'not allowed'
 
         # Delete the existing thumbnail if it exists
@@ -135,8 +134,7 @@ class ArticleRepository:
         if not article:
             return ''
 
-        # Check status of article (published and archived)
-        if article.status not in ('published', 'archived'):
+        if article.status in ('published', 'archived'):
             return 'not allowed'
 
         article_id = article.id

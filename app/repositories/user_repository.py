@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy.orm import Session
 from app.models.user import User, UserStatusParamCustom
 
@@ -6,6 +7,7 @@ class UserRepository:
         self.db = db
 
     def create_user(self, user: User):
+        user.id = str(uuid.uuid4())
         self.db.add(user)
         self.db.commit()
         self.db.refresh(user)

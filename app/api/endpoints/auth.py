@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dtos.auth import AuthLogin
@@ -21,17 +22,25 @@ def auth_login(auth_login: AuthLogin, db: Session = Depends(get_db)):
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
-    user_response = AuthResponse(
-        code=status.HTTP_200_OK,
+    user_id = auth_data.get('user_id', None)
+    access_token = auth_data.get('access_token', None)
+    refresh_token = auth_data.get('refresh_token', None)
+    expired_at = auth_data.get('access_token_expired_at', None)
+    status_code = status.HTTP_200_OK
+
+    auth_response = AuthResponse(
+        code=status_code,
         status="OK",
         data={
-            'id': auth_data.get('user_id', None),
-            'access_token': auth_data.get('access_token', None),
-            'refresh_token': auth_data.get('refresh_token', None),
-            'expired_at': auth_data.get('access_token_expired_at', None)
+            'id': user_id,
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'expired_at': expired_at
         },
     )
-    return user_response
+    response = JSONResponse(content=auth_response.model_dump(), status_code=status_code)
+    response.set_cookie("access_token", access_token, max_age=expired_at * 60)
+    return response
 
 # @router.post("/refresh-token", response_model=AuthResponse, status_code=status.HTTP_200_OK)
 # def auth_refresh_token(db: Session = Depends(get_db)):

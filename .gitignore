@@ -3,6 +3,8 @@
 .env
 alembic.ini
 notes.txt
+static/articles/content/**
+static/articles/thumbnail/**
 
 private.pem
 private-refresh.pem

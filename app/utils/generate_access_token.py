@@ -15,6 +15,11 @@ def generate_access_token(payload: dict) -> Tuple[str, int]:
         'iat' : current_time,
     })
 
-    access_token = jwt.encode(payload, config.PRIVATE_KEY.encode('utf-8'), 'RS256')
+    # Remove newline and split characters within the key
+    key_without_newline_and_split = config.PRIVATE_KEY.replace('\n', '').split('-----')
+
+    PRIVATE_KEY = f'-----{key_without_newline_and_split[1]}-----\n{key_without_newline_and_split[2]}\n-----{key_without_newline_and_split[3]}-----'
+
+    access_token = jwt.encode(payload, PRIVATE_KEY, 'RS256')
 
     return access_token, expired_at

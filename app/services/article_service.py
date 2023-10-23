@@ -18,8 +18,8 @@ class ArticleService:
             if article:
                 raise ValueError("Title already exists")
 
-    def create_article(self, article_form_data: ArticleFormData, thumbnail, file_extension):
-        return self.article_repository.create_article(article_form_data, thumbnail, file_extension)
+    def create_article(self, article_form_data: ArticleFormData, image, file_extension):
+        return self.article_repository.create_article(article_form_data, image, file_extension)
 
     def create_article_image(self, article_image_form_data: ArticleImageFormData, image, file_extension):
         return self.article_repository.create_article_image(article_image_form_data, image, file_extension)
@@ -37,7 +37,7 @@ class ArticleService:
                         'headline': article.headline,
                         'status': article.status,
                         'date': str(article.updated_at),
-                        'thumbnail': f"{self.base_url}static/articles/thumbnail/{article.thumbnail_url}" if article.thumbnail_url else None,
+                        'image': f"{self.base_url}static/articles/image/{article.image_url}" if article.image_url else None,
                     }
                 )
         return article_datas
@@ -53,13 +53,13 @@ class ArticleService:
             article_data['headline'] = article.headline
             article_data['status'] = article.status
             article_data['date'] = str(article.updated_at)
-            article_data['thumbnail'] = f"{self.base_url}static/articles/thumbnail/{article.thumbnail_url}" if article.thumbnail_url else None
+            article_data['image'] = f"{self.base_url}static/articles/image/{article.image_url}" if article.image_url else None
             article_data['description'] = article.description
 
         return article_data
 
-    def update_article(self, article_id:str, article_form_data: ArticleFormData, thumbnail, file_extension):
-        return self.article_repository.update_article(article_id, article_form_data, thumbnail, file_extension)
+    def update_article(self, article_id:str, article_form_data: ArticleFormData, image, file_extension):
+        return self.article_repository.update_article(article_id, article_form_data, image, file_extension)
 
     def delete_article(self, article_id: str):
         article_id = self.article_repository.delete_article(article_id)

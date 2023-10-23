@@ -8,7 +8,7 @@ class ArticleCreateAndEdit(BaseModel):
     title: constr(min_length=1, max_length=50)
     headline: Optional[constr(min_length=1, max_length=1024)]
     description: Optional[constr(min_length=1, max_length=2048)]
-    thumbnail_url: Optional[constr(min_length=1, max_length=512)]
+    image_url: Optional[constr(min_length=1, max_length=512)]
     lang: str
 
     @classmethod

@@ -20,7 +20,7 @@ def create_article(
     lang: ArticleLangParam = Form(...),
     headline: str = Form(None),
     description: str = Form(None),
-    thumbnail: UploadFile = File(None),
+    image: UploadFile = File(None),
     db: Session = Depends(get_db)
 ):
     """
@@ -33,7 +33,7 @@ def create_article(
         title=title,
         headline=headline,
         description=description,
-        thumbnail_url=thumbnail.filename if thumbnail else None,
+        image_url=image.filename if image else None,
         lang=lang
     )
 
@@ -47,9 +47,9 @@ def create_article(
     slug = ArticleCreateAndEdit.generate_slug(title)
     article_form = ArticleFormData(title=title, headline=headline, description=description, lang=lang, slug=slug)
 
-    content_type = thumbnail.content_type if thumbnail else ""
-    file_extension = content_type.split('/')[1] if thumbnail else ""
-    article_store = article_service.create_article(article_form, thumbnail, file_extension)
+    content_type = image.content_type if image else ""
+    file_extension = content_type.split('/')[1] if image else ""
+    article_store = article_service.create_article(article_form, image, file_extension)
     status_code = status.HTTP_201_CREATED
 
     article_response = ArticleResponse(
@@ -169,7 +169,7 @@ def delete_article(
 ):
     """
         Delete article
-        - delete existing thumbnail in storage
+        - delete existing image in storage
         - delete existing content image in storage
         - only allow delete with status flagged and archived
     """
@@ -250,14 +250,14 @@ def update_article(
     lang: ArticleLangParam = Form(...),
     headline: str = Form(None),
     description: str = Form(None),
-    thumbnail: UploadFile = File(None),
+    image: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
     """
         Update article
         - validation existing title
         - validation title allow when article it itself
-        - delete a existing thumnail and replace with new if new thumbnail is provided
+        - delete a existing thumnail and replace with new if new image is provided
         - only allow to update with status flagged or draft
     """
     article_service = ArticleService(db, request)
@@ -266,7 +266,7 @@ def update_article(
         title=title,
         headline=headline,
         description=description,
-        thumbnail_url=thumbnail.filename if thumbnail else None,
+        image_url=image.filename if image else None,
         lang=lang
     )
 
@@ -280,9 +280,9 @@ def update_article(
     slug = ArticleCreateAndEdit.generate_slug(title)
     article_form = ArticleFormData(title=title, headline=headline, description=description, lang=lang, slug=slug)
 
-    content_type = thumbnail.content_type if thumbnail else ""
-    file_extension = content_type.split('/')[1] if thumbnail else ""
-    article_update = article_service.update_article(article_id, article_form, thumbnail, file_extension)
+    content_type = image.content_type if image else ""
+    file_extension = content_type.split('/')[1] if image else ""
+    article_update = article_service.update_article(article_id, article_form, image, file_extension)
 
     if article_update == '':
         status_code = status.HTTP_404_NOT_FOUND

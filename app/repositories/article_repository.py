@@ -11,16 +11,16 @@ from app.utils.handling_file import delete_file, upload_file
 class ArticleRepository:
     def __init__(self, db: Session):
         self.db = db
-        self.static_folder_thumbnail = "./static/articles/thumbnail/"
+        self.static_folder_image = "./static/articles/image/"
         self.static_folder_content = "./static/articles/content/"
 
     def read_article_by_title(self, title: str) -> Article:
         return self.db.query(Article).filter(Article.title == title).first()
 
-    def create_article(self, article_form_data: ArticleFormData, thumbnail, file_extension):
-        file_name = upload_file(thumbnail, self.static_folder_thumbnail, file_extension)
+    def create_article(self, article_form_data: ArticleFormData, image, file_extension):
+        file_name = upload_file(image, self.static_folder_image, file_extension)
 
-        article_model = Article(id=str(uuid.uuid4()), title=article_form_data.title, headline=article_form_data.headline, slug=article_form_data.slug, description=article_form_data.description, thumbnail_url=file_name, lang=article_form_data.lang)
+        article_model = Article(id=str(uuid.uuid4()), title=article_form_data.title, headline=article_form_data.headline, slug=article_form_data.slug, description=article_form_data.description, image_url=file_name, lang=article_form_data.lang)
         self.db.add(article_model)
         self.db.commit()
         self.db.refresh(article_model)
@@ -40,9 +40,9 @@ class ArticleRepository:
 
     def read_all_article(self, article_status: str, article_lang: str) -> Article:
         if article_status == ArticleStatusParamCustom.all:
-            articles = self.db.query(Article.id, Article.title, Article.headline, Article.slug, Article.status, Article.updated_at, Article.thumbnail_url).filter(Article.lang == article_lang).all()
+            articles = self.db.query(Article.id, Article.title, Article.headline, Article.slug, Article.status, Article.updated_at, Article.image_url).filter(Article.lang == article_lang).all()
         else:
-            articles = self.db.query(Article.id, Article.title, Article.headline, Article.slug, Article.status, Article.updated_at, Article.thumbnail_url).filter(Article.status == article_status, Article.lang == article_lang).all()
+            articles = self.db.query(Article.id, Article.title, Article.headline, Article.slug, Article.status, Article.updated_at, Article.image_url).filter(Article.status == article_status, Article.lang == article_lang).all()
         return articles
 
     def read_article_by_slug(self, article_slug: str, content_image_location: str = False) -> Article:
@@ -79,7 +79,7 @@ class ArticleRepository:
         article = self.db.query(Article).filter(Article.id == article_id).one_or_none()
         return article
 
-    def update_article(self, article_id: str, article_form_data: ArticleFormData, thumbnail, file_extension):
+    def update_article(self, article_id: str, article_form_data: ArticleFormData, image, file_extension):
         article = self.read_article_by_id(article_id)
 
         if not article:
@@ -88,13 +88,13 @@ class ArticleRepository:
         if article.status in ('published', 'archived'):
             return 'not allowed'
 
-        # Delete the existing thumbnail if it exists
-        if article.thumbnail_url:
-            file_path = os.path.join(self.static_folder_thumbnail, article.thumbnail_url)
+        # Delete the existing image if it exists
+        if article.image_url:
+            file_path = os.path.join(self.static_folder_image, article.image_url)
             delete_file(file_path)
 
-        # Upload a new thumbnail if provided
-        article.thumbnail_url = upload_file(thumbnail, self.static_folder_thumbnail, file_extension)
+        # Upload a new image if provided
+        article.image_url = upload_file(image, self.static_folder_image, file_extension)
 
         # Update article details
         article.title = article_form_data.title
@@ -138,12 +138,12 @@ class ArticleRepository:
             return 'not allowed'
 
         article_id = article.id
-        article_thumbnail_url = article.thumbnail_url
+        article_image_url = article.image_url
         article_description = article.description
 
-        # handle delete thumbnail
-        if article_thumbnail_url:
-            file_path = os.path.join(self.static_folder_thumbnail, article_thumbnail_url)
+        # handle delete image
+        if article_image_url:
+            file_path = os.path.join(self.static_folder_image, article_image_url)
             delete_file(file_path)
 
         # handle delete img of description

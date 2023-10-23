@@ -4,7 +4,7 @@
 alembic.ini
 notes.txt
 static/articles/content/**
-static/articles/thumbnail/**
+static/articles/image/**
 
 private.pem
 private-refresh.pem

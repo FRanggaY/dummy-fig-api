@@ -11,8 +11,9 @@ from app.services.user_service import UserService
 
 router = APIRouter()
 
-not_found_message =  "Article not found"
-result_not_allow =  'not allowed'
+not_found_message = "Article not found"
+result_not_allow = 'not allowed'
+status_not_found = 'NOT FOUND'
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_article(
@@ -113,7 +114,7 @@ def read_all_article(
         status_code = status.HTTP_404_NOT_FOUND
         article_response = ArticleResponse(
             code=status.HTTP_404_NOT_FOUND,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': not_found_message
             },
@@ -146,7 +147,7 @@ def read_article(
         status_code = status.HTTP_404_NOT_FOUND
         article_response = ArticleResponse(
             code=status.HTTP_404_NOT_FOUND,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': not_found_message
             },
@@ -181,7 +182,7 @@ def delete_article(
         status_code = status.HTTP_404_NOT_FOUND
         article_response = ArticleResponse(
             code=status.HTTP_404_NOT_FOUND,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': not_found_message
             },
@@ -190,7 +191,7 @@ def delete_article(
         status_code = status.HTTP_403_FORBIDDEN
         article_response = ArticleResponse(
             code=status.HTTP_403_FORBIDDEN,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': 'only allow delete with status flagged or archived'
             },
@@ -225,7 +226,7 @@ def change_article_status(
         status_code = status.HTTP_404_NOT_FOUND
         article_response = ArticleResponse(
             code=status.HTTP_404_NOT_FOUND,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': not_found_message
             },
@@ -288,7 +289,7 @@ def update_article(
         status_code = status.HTTP_404_NOT_FOUND
         article_response = ArticleResponse(
             code=status.HTTP_404_NOT_FOUND,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': not_found_message
             },
@@ -297,7 +298,7 @@ def update_article(
         status_code = status.HTTP_403_FORBIDDEN
         article_response = ArticleResponse(
             code=status.HTTP_403_FORBIDDEN,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': 'only allow delete with status flagged or draft'
             },
@@ -332,7 +333,7 @@ def delete_article_image(
         status_code = status.HTTP_404_NOT_FOUND
         article_response = ArticleResponse(
             code=status.HTTP_404_NOT_FOUND,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': not_found_message
             },

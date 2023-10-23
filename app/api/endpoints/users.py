@@ -9,7 +9,8 @@ from app.services.user_service import UserService
 
 router = APIRouter()
 
-not_found_message =  "User not found"
+not_found_message = "User not found"
+status_not_found = 'NOT FOUND'
 
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(user_create: UserCreate, db: Session = Depends(get_db)):
@@ -55,7 +56,7 @@ def read_all_user(
         status_code = status.HTTP_404_NOT_FOUND
         user_response = UserResponse(
             code=status_code,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': "Users not found"
             },
@@ -86,7 +87,7 @@ def read_user(
         status_code = status.HTTP_404_NOT_FOUND
         user_response = UserResponse(
             code=status_code,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': not_found_message
             },
@@ -126,7 +127,7 @@ def update_user(id: str, user_edit: UserEdit, db: Session = Depends(get_db)):
         status_code = status.HTTP_404_NOT_FOUND
         user_response = UserResponse(
             code=status_code,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': not_found_message
             },
@@ -159,7 +160,7 @@ def delete_user(
         status_code = status.HTTP_404_NOT_FOUND
         user_response = UserResponse(
             code=status_code,
-            status="NOT FOUND",
+            status=status_not_found,
             data={
                 'message': not_found_message
             },

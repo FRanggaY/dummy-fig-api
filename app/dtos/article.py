@@ -7,6 +7,7 @@ from app.models.user import UserStatusParam
 class ArticleCreateAndEdit(BaseModel):
     title: constr(min_length=1, max_length=50)
     headline: Optional[constr(min_length=1, max_length=1024)]
+    author: Optional[constr(min_length=1, max_length=512)]
     description: Optional[constr(min_length=1, max_length=2048)]
     image_url: Optional[constr(min_length=1, max_length=512)]
     lang: str
@@ -29,6 +30,7 @@ class ArticleFormData(BaseModel):
     title: str
     headline: Optional[str]
     description: Optional[str]
+    author: Optional[str]
     slug: str
     lang: str
 

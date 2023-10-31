@@ -6,6 +6,7 @@ from app.dtos.article import ArticleCreateAndEdit, ArticleFormData, ArticleImage
 from app.models.article import ArticleLangParam, ArticleStatusParamCustom, ArticleStatusParam
 from app.models.response import ArticleResponse
 from app.models.user import UserStatusParam, UserStatusParamCustom
+from app.repositories.article_repository import ArticleRepository
 from app.services.article_service import ArticleService
 from app.services.user_service import UserService
 
@@ -20,6 +21,7 @@ def create_article(
     title: str = Form(..., pattern=r'^[a-zA-Z0-9\s]+$'),
     lang: ArticleLangParam = Form(...),
     headline: str = Form(None),
+    author: str = Form(None),
     description: str = Form(None),
     image: UploadFile = File(None),
     db: Session = Depends(get_db)
@@ -34,10 +36,10 @@ def create_article(
         title=title,
         headline=headline,
         description=description,
+        author=author,
         image_url=image.filename if image else None,
         lang=lang
     )
-
     article_service = ArticleService(db)
 
     try:
@@ -46,7 +48,7 @@ def create_article(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
     slug = ArticleCreateAndEdit.generate_slug(title)
-    article_form = ArticleFormData(title=title, headline=headline, description=description, lang=lang, slug=slug)
+    article_form = ArticleFormData(title=title, headline=headline, description=description, lang=lang, slug=slug, author=author)
 
     content_type = image.content_type if image else ""
     file_extension = content_type.split('/')[1] if image else ""
@@ -64,7 +66,7 @@ def create_article(
     return response
 
 @router.post("/image", status_code=status.HTTP_201_CREATED)
-def create_article_image(
+async def create_article_image(
     article_id: str = Form(...),
     image: UploadFile = File(...),
     db: Session = Depends(get_db)
@@ -76,6 +78,21 @@ def create_article_image(
         article_id=article_id
     )
     article_service = ArticleService(db)
+
+    try:
+        await article_service.validation_new_article_images(article_id=article_id, image=image)
+    except Exception as e:
+        status_code = status.HTTP_400_BAD_REQUEST
+        article_response = ArticleResponse(
+            code=status_code,
+            status="BAD REQUEST",
+            data={
+                'message': str(e)
+            },
+        )
+
+        response = JSONResponse(content=article_response.model_dump(), status_code=status_code)
+        return response
 
     article_image_form = ArticleImageFormData(article_id=article_id)
 

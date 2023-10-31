@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column('id', sa.String(36), primary_key=True, server_default=str(uuid.uuid4())),
         sa.Column('article_id', sa.String(36), nullable=False),
         sa.Column('image_url', sa.String(512), nullable=True),
-        sa.Column('position', sa.Integer, nullable=False, server_default=0),
+        sa.Column('position', sa.Integer, nullable=False),
         sa.Column('created_at', sa.DateTime, server_default=sa.func.NOW(), nullable=False),
         sa.Column('updated_at', sa.DateTime, server_default=sa.func.NOW(), onupdate=sa.func.NOW(), nullable=False),
     )

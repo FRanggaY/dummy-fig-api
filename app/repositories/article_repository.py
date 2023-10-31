@@ -20,7 +20,7 @@ class ArticleRepository:
     def create_article(self, article_form_data: ArticleFormData, image, file_extension):
         file_name = upload_file(image, self.static_folder_image, file_extension)
 
-        article_model = Article(id=str(uuid.uuid4()), title=article_form_data.title, headline=article_form_data.headline, slug=article_form_data.slug, description=article_form_data.description, image_url=file_name, lang=article_form_data.lang)
+        article_model = Article(id=str(uuid.uuid4()), title=article_form_data.title, headline=article_form_data.headline, slug=article_form_data.slug, description=article_form_data.description, image_url=file_name, lang=article_form_data.lang, author=article_form_data.author)
         self.db.add(article_model)
         self.db.commit()
         self.db.refresh(article_model)

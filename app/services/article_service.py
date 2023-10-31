@@ -1,4 +1,4 @@
-from fastapi import Request, Depends
+from fastapi import File, Request, Depends
 from sqlalchemy.orm import Session
 from app.dtos.article import ArticleFormData, ArticleImageFormData
 from app.repositories.article_repository import ArticleRepository
@@ -17,6 +17,26 @@ class ArticleService:
         else:
             if article:
                 raise ValueError("Title already exists")
+
+    async def validation_new_article_images(self, article_id: str, image: File, limit_file_size_mb: int = 5, allowed_extension: list = ["image/jpeg", "image/png"]):
+        article_id_valid = self.article_repository.read_article_by_id(article_id=article_id)
+        if not article_id_valid:
+            raise ValueError("Article not found")
+
+        image.file.seek(0, 2)
+        file_size = image.file.tell()
+
+        # move the cursor back to the beginning
+        await image.seek(0)
+        if file_size > limit_file_size_mb * 1024 * 1024:
+            # more than 5 MB
+            raise ValueError(f"Image too large. only allow image lower than {limit_file_size_mb} mb")
+
+        # check the content type (MIME type)
+        content_type = image.content_type
+        if content_type not in allowed_extension:
+            image_formats = ', '.join([mime.split('/')[-1] for mime in allowed_extension])
+            raise ValueError(f"Invalid image file type. only allow image with type {image_formats}")
 
     def create_article(self, article_form_data: ArticleFormData, image, file_extension):
         return self.article_repository.create_article(article_form_data, image, file_extension)

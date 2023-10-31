@@ -30,7 +30,7 @@ def upgrade() -> None:
         sa.Column('image_url', sa.String(512), nullable=True),
         sa.Column('author', sa.String(128), nullable=True),
         sa.Column('status', sa.Enum('draft', 'flagged', 'archived', 'publish'), server_default='draft', nullable=False),
-        sa.Column('lang', sa.Enum('en', 'id'), server_default='id', nullable=False),
+        sa.Column('lang', sa.Enum('en', 'id'), server_default='en', nullable=False),
         sa.Column('published_at', sa.Date, nullable=True),
         sa.Column('created_at', sa.DateTime, server_default=sa.func.NOW(), nullable=False),
         sa.Column('updated_at', sa.DateTime, server_default=sa.func.NOW(), onupdate=sa.func.NOW(), nullable=False),

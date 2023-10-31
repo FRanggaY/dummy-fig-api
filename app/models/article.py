@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from enum import Enum as EnumParam
 
 from app.database import Base
-from category import Category
+from app.models.category import Category
 
 class Article(Base):
     __tablename__ = "articles"
@@ -18,7 +18,7 @@ class Article(Base):
     image_url = Column(String(512), nullable=True)
     author = Column(String(128), nullable=True)
     status = Column(Enum('draft', 'flagged', 'archived', 'publish'), server_default='draft', nullable=False)
-    lang = Column(Enum('eng', 'ind'), server_default='ind', nullable=False)
+    lang = Column(Enum('en', 'id'), server_default='en', nullable=False)
     published_at = Column(Date, nullable=True)
     created_at = Column(DateTime, server_default=func.NOW(), nullable=False)
     updated_at = Column(DateTime, server_default=func.NOW(), onupdate=func.NOW(), nullable=False)
@@ -64,5 +64,5 @@ class ArticleStatusParamCustom(str, EnumParam):
     publish = "publish"
 
 class ArticleLangParam(str, EnumParam):
-    eng = "eng"
-    ind = "ind"
+    en = "en"
+    id = "id"

@@ -6,6 +6,7 @@ from app.dtos.user import UserCreate, UserEdit
 from app.models.response import UserResponse
 from app.models.user import UserStatusParam, UserStatusParamCustom
 from app.services.user_service import UserService
+from app.utils.authentication import Authentication
 
 router = APIRouter()
 
@@ -13,7 +14,7 @@ not_found_message = "User not found"
 status_not_found = 'NOT FOUND'
 
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def create_user(user_create: UserCreate, db: Session = Depends(get_db)):
+def create_user(user_create: UserCreate, db: Session = Depends(get_db), payload = Depends(Authentication())):
     """
         Create a new user
         - validation unique username
@@ -43,7 +44,8 @@ def create_user(user_create: UserCreate, db: Session = Depends(get_db)):
 @router.get("", response_model=UserResponse, status_code=status.HTTP_200_OK)
 def read_all_user(
     user_status: UserStatusParamCustom,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Read all users
@@ -74,7 +76,8 @@ def read_all_user(
 @router.get("/{id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
 def read_user(
     id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Read user
@@ -107,7 +110,7 @@ def read_user(
     return response
 
 @router.patch("/{id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
-def update_user(id: str, user_edit: UserEdit, db: Session = Depends(get_db)):
+def update_user(id: str, user_edit: UserEdit, db: Session = Depends(get_db), payload = Depends(Authentication())):
     """
         Update user
         - validation unique username
@@ -147,7 +150,8 @@ def update_user(id: str, user_edit: UserEdit, db: Session = Depends(get_db)):
 @router.delete("/{id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
 def delete_user(
     id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Delete user

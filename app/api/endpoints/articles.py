@@ -10,6 +10,7 @@ from app.models.user import UserStatusParam, UserStatusParamCustom
 from app.repositories.article_repository import ArticleRepository
 from app.services.article_service import ArticleService
 from app.services.user_service import UserService
+from app.utils.authentication import Authentication
 
 router = APIRouter()
 
@@ -22,7 +23,8 @@ pattern_valid_title = r'^[a-zA-Z0-9\s]+$'
 @router.post("/category", status_code=status.HTTP_201_CREATED)
 def create_article_category(
     label: str = Form(..., pattern=pattern_valid_title),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Create a new article
@@ -90,6 +92,7 @@ def delete_article_category(
     request: Request,
     category_id: str,
     db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Delete article category
@@ -128,7 +131,8 @@ def create_article(
     author: str = Form(None),
     description: str = Form(None),
     image: UploadFile = File(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Create a new article
@@ -173,7 +177,8 @@ def create_article(
 async def create_article_image(
     article_id: str = Form(...),
     image: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Create a new article of image refer article_id
@@ -301,6 +306,7 @@ def delete_article(
     request: Request,
     article_id: str,
     db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Delete article
@@ -353,6 +359,7 @@ def update_article(
     author: str = Form(None),
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Update article
@@ -422,6 +429,7 @@ def change_article_status(
     article_id: str,
     article_status: ArticleStatusParam,
     db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Change article status
@@ -458,6 +466,7 @@ def assign_article_category(
     article_id: str,
     category_id: str,
     db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Assign article category
@@ -505,6 +514,7 @@ def unassign_article_category(
     article_id: str,
     category_id: str,
     db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Unassign article category
@@ -539,6 +549,7 @@ def delete_article_image(
     request: Request,
     article_id: str,
     db: Session = Depends(get_db),
+    payload = Depends(Authentication())
 ):
     """
         Update article image

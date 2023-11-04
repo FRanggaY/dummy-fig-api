@@ -58,11 +58,16 @@ class ArticleService:
     def create_article_image(self, article_image_form_data: ArticleImageFormData, image, file_extension):
         return self.article_repository.create_article_image(article_image_form_data, image, file_extension)
 
-    def read_all_article(self, article_status: str, article_lang: str):
+    def read_all_article(self, article_status: str, article_lang: str, category_id: str = None, offset: int = None, limit: int = None):
         article_datas = []
-        articles = self.article_repository.read_all_article(article_status, article_lang)
+        results = self.article_repository.read_all_article(article_status, article_lang, category_id, offset, limit)
+        articles = results['articles']
+        total_article = results['total_article']
+
         if len(articles) > 0:
             for article in articles:
+                category_values = [{'id': article_category.category.id, 'value': article_category.category.label} for article_category in article.article_categories]
+                category_datas = category_values if category_values else []
                 article_datas.append(
                     {
                         'id': article.id,
@@ -70,11 +75,13 @@ class ArticleService:
                         'slug': article.slug,
                         'headline': article.headline,
                         'status': article.status,
-                        'date': str(article.updated_at),
+                        'categories': category_datas,
+                        'published_at': str(article.published_at) if article.published_at else None,
+                        'updated_at': str(article.updated_at) if article.updated_at else None,
                         'image': f"{self.base_url}static/articles/image/{article.image_url}" if article.image_url else None,
                     }
                 )
-        return article_datas
+        return article_datas, total_article
 
     def read_all_article_category(self):
         article_category_datas = []
@@ -92,6 +99,8 @@ class ArticleService:
     def read_article(self, article_slug: str):
         content_image_location = f"{self.base_url}static/articles/content/"
         article = self.article_repository.read_article_by_slug(article_slug, content_image_location)
+        category_values = [{'id': article_category.category.id, 'value': article_category.category.label} for article_category in article.article_categories]
+        category_datas = category_values if category_values else []
         article_data = {}
         if article:
             article_data['id'] = article.id
@@ -99,9 +108,11 @@ class ArticleService:
             article_data['slug'] = article.slug
             article_data['headline'] = article.headline
             article_data['status'] = article.status
-            article_data['date'] = str(article.updated_at)
             article_data['image'] = f"{self.base_url}static/articles/image/{article.image_url}" if article.image_url else None
             article_data['description'] = article.description
+            article_data['published_at'] = str(article.published_at) if article.published_at else None
+            article_data['updated_at'] = str(article.updated_at) if article.updated_at else None
+            article_data['categories'] = category_datas
             article_data['author'] = article.author
 
         return article_data

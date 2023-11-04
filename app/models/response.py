@@ -17,3 +17,7 @@ class AuthResponse(BaseResponse):
 
 class ArticleResponse(BaseResponse):
     data: Optional[Union[dict, list]]
+
+class ArticlePaginateResponse(BaseResponse):
+    data: Optional[Union[dict, list]]
+    meta: Optional[Union[dict, list]]

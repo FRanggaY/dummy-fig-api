@@ -1,6 +1,6 @@
 import uuid
 import os
-from sqlalchemy import asc
+from sqlalchemy import asc, func
 from sqlalchemy.orm import Session
 from app.dtos.article import ArticleCategoryAssignAndUnassignFormData, ArticleCategoryFormData, ArticleFormData, ArticleImageFormData
 from app.models.article import Article, ArticleCategory, ArticleImage, ArticleStatusParamCustom
@@ -52,15 +52,28 @@ class ArticleRepository:
 
         return article_image_model
 
-    def read_all_article(self, article_status: str, article_lang: str) -> Article:
-        if article_status == ArticleStatusParamCustom.all:
-            articles = self.db.query(Article.id, Article.title, Article.headline, Article.slug, Article.status, Article.updated_at, Article.image_url).filter(Article.lang == article_lang).all()
-        else:
-            articles = self.db.query(Article.id, Article.title, Article.headline, Article.slug, Article.status, Article.updated_at, Article.image_url).filter(Article.status == article_status, Article.lang == article_lang).all()
-        return articles
+    def read_all_article(self, article_status: str, article_lang: str, category_id: str = None, offset: int = None, limit: int = None) -> Article:
+        articles_query = self.db.query(Article).filter(Article.lang == article_lang)
+
+
+        if article_status != ArticleStatusParamCustom.all:
+            articles_query = articles_query.filter(Article.status == article_status)
+
+        total_article = articles_query.count()
+
+        if category_id is not None:
+            articles_query = articles_query.join(Article.article_categories).join(Category).filter(Category.id == category_id)
+
+        articles_query = articles_query.order_by(asc(Article.published_at))
+
+        if offset is not None and limit is not None:
+            articles_query = articles_query.offset(offset).limit(limit)
+
+        articles = articles_query.all()
+        return {"articles": articles, "total_article": total_article}
 
     def read_all_article_category(self) -> Category:
-        article_categories = self.db.query(Category.id, Category.label).all()
+        article_categories = self.db.query(Category.id, Category.label).order_by(asc(Category.label)).all()
         return article_categories
 
     def read_article_by_slug(self, article_slug: str, content_image_location: str = False) -> Article:
@@ -76,20 +89,21 @@ class ArticleRepository:
                     .all()
                 )
 
-            # handle image to array
-            article_images = [article_image.image_url for article_image in article.images]
+            if len(article.images) > 0:
+                # handle image to array
+                article_images = [article_image.image_url for article_image in article.images]
 
-            # split into array
-            description_parts = article.description.split('<img src=\"\">')
+                # split into array
+                description_parts = article.description.split('<img src=\"\">')
 
-            # Use string formatting to insert the image URLs
-            formatted_description = ""
-            for i, part in enumerate(description_parts):
-                formatted_description += part
-                if i < len(article_images) and article_images[i]:  # Check if image URL is not empty
-                    formatted_description += f'<img src="{content_image_location}{article_images[i]}" alt="image{i + 1}">'
+                # Use string formatting to insert the image URLs
+                formatted_description = ""
+                for i, part in enumerate(description_parts):
+                    formatted_description += part
+                    if i < len(article_images) and article_images[i]:  # Check if image URL is not empty
+                        formatted_description += f'<img src="{content_image_location}{article_images[i]}" alt="image{i + 1}">'
 
-            article.description = formatted_description
+                article.description = formatted_description
 
         return article
 
@@ -204,6 +218,11 @@ class ArticleRepository:
             return ''
 
     def change_article_status(self, article: Article):
+        # if status publshed at date
+        if article.status == ArticleStatusParamCustom.publish:
+            article.published_at = func.NOW()
+        else:
+            article.published_at = None
         self.db.commit()
         return article
 

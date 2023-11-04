@@ -1,10 +1,11 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, Request, status, HTTPException, Form, UploadFile, File
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dtos.article import ArticleCategoryCreate, ArticleCategoryFormData, ArticleCreateAndEdit, ArticleFormData, ArticleImageCreate, ArticleImageFormData
 from app.models.article import ArticleLangParam, ArticleStatusParamCustom, ArticleStatusParam
-from app.models.response import ArticleResponse
+from app.models.response import ArticlePaginateResponse, ArticleResponse
 from app.models.user import UserStatusParam, UserStatusParamCustom
 from app.repositories.article_repository import ArticleRepository
 from app.services.article_service import ArticleService
@@ -214,37 +215,50 @@ async def create_article_image(
     response = JSONResponse(content=article_response.model_dump(), status_code=status_code)
     return response
 
-@router.get("", response_model=ArticleResponse, status_code=status.HTTP_200_OK)
+@router.get("", response_model=ArticlePaginateResponse, status_code=status.HTTP_200_OK)
 def read_all_article(
     request: Request,
     article_status: ArticleStatusParamCustom,
     article_lang: ArticleLangParam,
+    category_id: Optional[str] = None,
+    offset: Optional[int] = None,
+    limit: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
     """
         Read all articles
         - filter by status
         - filter by language
+        - optional filter by category
     """
     article_service = ArticleService(db, request)
 
-    articles = article_service.read_all_article(article_status, article_lang)
+    articles, total_article = article_service.read_all_article(article_status, article_lang, category_id, offset, limit)
+    extra_page = 1 if limit is not None and total_article % limit > 0 else 0
+    total_pages = (total_article // limit) + extra_page if limit is not None else None
 
     if len(articles) == 0:
         status_code = status.HTTP_404_NOT_FOUND
-        article_response = ArticleResponse(
+        article_response = ArticlePaginateResponse(
             code=status.HTTP_404_NOT_FOUND,
             status=status_not_found,
             data={
                 'message': not_found_message
             },
+            meta={}
         )
     else:
         status_code = status.HTTP_200_OK
-        article_response = ArticleResponse(
+        article_response = ArticlePaginateResponse(
             code=status_code,
             status="OK",
             data=articles,
+            meta={
+                'page': offset,
+                'size': limit,
+                'total_items': total_article,
+                'total_pages': total_pages,
+            }
         )
     response = JSONResponse(content=article_response.model_dump(), status_code=status_code)
     return response
@@ -411,6 +425,7 @@ def change_article_status(
 ):
     """
         Change article status
+        - trigger if article published then add date when it is published
     """
     article_service = ArticleService(db, request)
 

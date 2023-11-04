@@ -18,6 +18,7 @@ def upload_file(data, folder, file_extension):
         # Return the filename
         return str(Path(new_filename))
     else:
+        print('error to upload file')
         return None
 
 def delete_file(file_path: str):

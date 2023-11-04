@@ -1,0 +1,12 @@
+# docker-compose.yml
+# this set up for production
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "8120:8120"
+    volumes:
+      - .:/code

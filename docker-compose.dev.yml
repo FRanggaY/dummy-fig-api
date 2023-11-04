@@ -4,13 +4,13 @@ version: '3.9'
 services:
   db:
     image: mysql:latest
-    container_name: dev_db_dummy_fig
+    container_name: dev_db_personal_blog_api
     restart: unless-stopped
     tty: true
     ports:
       - "4306:3306"
     environment:
-      MYSQL_DATABASE: dummy_fig
+      MYSQL_DATABASE: personal_blog_api
       MYSQL_USER: user
       MYSQL_PASSWORD: user
       MYSQL_ROOT_PASSWORD: root
@@ -20,13 +20,13 @@ services:
       - db:/var/lib/mysql
       - ./docker/mysql/my.conf:/etc/mysql/my.conf
     networks:
-      - dummy_fig-networks
+      - personal_blog_api-networks
 
   phpmyadmin:
     depends_on:
       - db
     image: phpmyadmin:latest
-    container_name: dev_phpmyadmin_dummy_fig
+    container_name: dev_phpmyadmin_personal_blog_api
     restart: unless-stopped
     ports:
       - "1002:80"
@@ -34,10 +34,10 @@ services:
       PMA_HOST: db
       UPLOAD_LIMIT: 300M
     networks:
-      - dummy_fig-networks
+      - personal_blog_api-networks
 
 networks:
-  dummy_fig-networks:
+  personal_blog_api-networks:
     driver: bridge
 
 volumes:

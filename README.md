@@ -70,12 +70,16 @@ docker-compose -f docker-compose.dev.yml up --build -d
 
 Duplicate alembic.ini.example and renamed it to alembic.ini
 
+Fill this variable in alembic.ini
+```sh
+sqlalchemy.url = mysql+pymysql://{username}:{password}@{host}:{port}/{database}
+```
+
 Duplicate .env.example and renamed it to .env
 
 Fill this variable in .env
 ```sh
 DB="mysql+pymysql://{username}:{password}@{host}:{port}/{database}"
-# or default from docker "mysql+pymysql://user:user@localhost:4306/personal_blog_api"
 ```
 
 ### Setup project

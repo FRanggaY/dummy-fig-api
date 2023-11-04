@@ -1,6 +1,6 @@
 from fastapi import File, Request, Depends
 from sqlalchemy.orm import Session
-from app.dtos.article import ArticleFormData, ArticleImageFormData
+from app.dtos.article import ArticleCategoryAssignAndUnassignFormData, ArticleCategoryFormData, ArticleFormData, ArticleImageFormData
 from app.repositories.article_repository import ArticleRepository
 
 class ArticleService:
@@ -9,14 +9,25 @@ class ArticleService:
         self.article_repository = ArticleRepository(db)
         self.base_url = str(request.base_url) if request else ""
 
-    def check_title_exists(self, title: str, exist_article_id : str = False):
-        article = self.article_repository.read_article_by_title(title)
-        if exist_article_id:
-            if article and article.id != exist_article_id:
-                raise ValueError("Title already exists")
+    def check_exists(self, function, exist_id, label):
+        data = function
+        if exist_id:
+            if data and data.id != exist_id:
+                raise ValueError(f"{label} already exists")
         else:
-            if article:
-                raise ValueError("Title already exists")
+            if data:
+                raise ValueError(f"{label} already exists")
+
+    def check_title_exists(self, title: str, exist_article_id : str = False):
+        self.check_exists(function=self.article_repository.read_article_by_title(title), exist_id=exist_article_id, label='Title')
+
+    def check_category_label_exists(self, label: str, exist_category_id : str = False):
+        self.check_exists(function=self.article_repository.read_category_by_label(label), exist_id=exist_category_id, label='Label')
+
+    def check_article_category_assigned(self, article_id: str, category_id : str):
+        category = self.article_repository.read_article_category_by_article_id_and_category_id(article_id, category_id)
+        if category:
+            raise ValueError("Category already assigned")
 
     async def validation_new_article_images(self, article_id: str, image: File, limit_file_size_mb: int = 5, allowed_extension: list = ["image/jpeg", "image/png"]):
         article_id_valid = self.article_repository.read_article_by_id(article_id=article_id)
@@ -41,6 +52,9 @@ class ArticleService:
     def create_article(self, article_form_data: ArticleFormData, image, file_extension):
         return self.article_repository.create_article(article_form_data, image, file_extension)
 
+    def create_article_category(self, article_category_form_data: ArticleCategoryFormData):
+        return self.article_repository.create_article_category(article_category_form_data)
+
     def create_article_image(self, article_image_form_data: ArticleImageFormData, image, file_extension):
         return self.article_repository.create_article_image(article_image_form_data, image, file_extension)
 
@@ -62,6 +76,19 @@ class ArticleService:
                 )
         return article_datas
 
+    def read_all_article_category(self):
+        article_category_datas = []
+        article_categories = self.article_repository.read_all_article_category()
+        if len(article_categories) > 0:
+            for article_category in article_categories:
+                article_category_datas.append(
+                    {
+                        'id': article_category.id,
+                        'label': article_category.label,
+                    }
+                )
+        return article_category_datas
+
     def read_article(self, article_slug: str):
         content_image_location = f"{self.base_url}static/articles/content/"
         article = self.article_repository.read_article_by_slug(article_slug, content_image_location)
@@ -75,6 +102,7 @@ class ArticleService:
             article_data['date'] = str(article.updated_at)
             article_data['image'] = f"{self.base_url}static/articles/image/{article.image_url}" if article.image_url else None
             article_data['description'] = article.description
+            article_data['author'] = article.author
 
         return article_data
 
@@ -84,6 +112,10 @@ class ArticleService:
     def delete_article(self, article_id: str):
         article_id = self.article_repository.delete_article(article_id)
         return article_id
+
+    def delete_article_category(self, category_id: str):
+        category_id = self.article_repository.delete_article_category(category_id)
+        return category_id
 
     def delete_article_image(self, article_id: str):
         article = self.article_repository.read_article_by_id(article_id)
@@ -101,3 +133,21 @@ class ArticleService:
             article.status = article_status
 
         return self.article_repository.change_article_status(article)
+
+    def assign_article_category(self, article_id: str, category_id: str):
+        article = self.article_repository.read_article_by_id(article_id)
+        article_category = self.article_repository.read_article_category_by_id(category_id)
+        if not article or not article_category:
+            return ''
+
+        # check that already assigned category or not
+        article_category_exist = self.check_article_category_assigned(article_id, category_id)
+        if article_category_exist:
+            return 'already assigned'
+
+        article_category_assign_and_unassign_model = ArticleCategoryAssignAndUnassignFormData(article_id=article_id, category_id=category_id)
+        return self.article_repository.assign_article_category(article_category_assign_and_unassign_model)
+
+    def unassign_article_category(self, article_id: str, category_id: str):
+        article_category_assign_and_unassign_model = ArticleCategoryAssignAndUnassignFormData(article_id=article_id, category_id=category_id)
+        return self.article_repository.unassign_article_category(article_category_assign_and_unassign_model)

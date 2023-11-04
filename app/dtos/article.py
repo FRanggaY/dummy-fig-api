@@ -1,14 +1,25 @@
 from typing import Optional
 from pydantic import BaseModel, Field, constr
 from app.models.article import Article, ArticleLangParam
+from app.models.category import Category
 
 from app.models.user import UserStatusParam
+
+class ArticleCategoryCreate(BaseModel):
+    label: constr(min_length=1, max_length=50)
+
+    @classmethod
+    def validate_label(cls, label):
+        exists = Category.where(Category.label == label).exists()
+        if exists:
+            raise ValueError("Label already exists")
 
 class ArticleCreateAndEdit(BaseModel):
     title: constr(min_length=1, max_length=50)
     headline: Optional[constr(min_length=1, max_length=1024)]
     author: Optional[constr(min_length=1, max_length=512)]
     description: Optional[constr(min_length=1, max_length=2048)]
+    author: Optional[constr(min_length=1, max_length=512)]
     image_url: Optional[constr(min_length=1, max_length=512)]
     lang: str
 
@@ -36,3 +47,10 @@ class ArticleFormData(BaseModel):
 
 class ArticleImageFormData(BaseModel):
     article_id: str
+
+class ArticleCategoryAssignAndUnassignFormData(BaseModel):
+    article_id: str
+    category_id: str
+
+class ArticleCategoryFormData(BaseModel):
+    label: str

@@ -2,8 +2,9 @@ import uuid
 import os
 from sqlalchemy import asc
 from sqlalchemy.orm import Session
-from app.dtos.article import ArticleFormData, ArticleImageFormData
-from app.models.article import Article, ArticleImage, ArticleStatusParamCustom
+from app.dtos.article import ArticleCategoryAssignAndUnassignFormData, ArticleCategoryFormData, ArticleFormData, ArticleImageFormData
+from app.models.article import Article, ArticleCategory, ArticleImage, ArticleStatusParamCustom
+from app.models.category import Category
 
 from app.utils.handling_file import delete_file, upload_file
 
@@ -17,6 +18,12 @@ class ArticleRepository:
     def read_article_by_title(self, title: str) -> Article:
         return self.db.query(Article).filter(Article.title == title).first()
 
+    def read_category_by_label(self, label: str) -> Category:
+        return self.db.query(Category).filter(Category.label == label).first()
+
+    def read_article_category_by_article_id_and_category_id(self, article_id: str, category_id: str) -> Category:
+        return self.db.query(ArticleCategory).filter(ArticleCategory.article_id == article_id, ArticleCategory.category_id == category_id).first()
+
     def create_article(self, article_form_data: ArticleFormData, image, file_extension):
         file_name = upload_file(image, self.static_folder_image, file_extension)
 
@@ -25,6 +32,13 @@ class ArticleRepository:
         self.db.commit()
         self.db.refresh(article_model)
         return article_model
+
+    def create_article_category(self, article_category_form_data: ArticleCategoryFormData):
+        article_category_model = Category(id=str(uuid.uuid4()), label=article_category_form_data.label)
+        self.db.add(article_category_model)
+        self.db.commit()
+        self.db.refresh(article_category_model)
+        return article_category_model
 
     def create_article_image(self, article_image_form_data: ArticleImageFormData, image, file_extension):
         # handling filename
@@ -44,6 +58,10 @@ class ArticleRepository:
         else:
             articles = self.db.query(Article.id, Article.title, Article.headline, Article.slug, Article.status, Article.updated_at, Article.image_url).filter(Article.status == article_status, Article.lang == article_lang).all()
         return articles
+
+    def read_all_article_category(self) -> Category:
+        article_categories = self.db.query(Category.id, Category.label).all()
+        return article_categories
 
     def read_article_by_slug(self, article_slug: str, content_image_location: str = False) -> Article:
         article = self.db.query(Article).filter(Article.slug == article_slug).one_or_none()
@@ -79,6 +97,10 @@ class ArticleRepository:
         article = self.db.query(Article).filter(Article.id == article_id).one_or_none()
         return article
 
+    def read_article_category_by_id(self, category_id: str) -> Category:
+        category = self.db.query(Category).filter(Category.id == category_id).one_or_none()
+        return category
+
     def update_article(self, article_id: str, article_form_data: ArticleFormData, image, file_extension):
         article = self.read_article_by_id(article_id)
 
@@ -106,6 +128,9 @@ class ArticleRepository:
 
         if article_form_data.description:
             article.description = article_form_data.description
+
+        if article_form_data.author:
+            article.author = article_form_data.author
 
         self.db.commit()
         self.db.refresh(article)
@@ -154,6 +179,16 @@ class ArticleRepository:
         self.db.commit()
         return article_id
 
+    def delete_article_category(self, category_id: str) -> str:
+        category = self.db.query(Category).filter(Category.id == category_id).first()
+
+        if not category:
+            return ''
+
+        self.db.delete(category)
+        self.db.commit()
+        return category_id
+
     def delete_article_image(self, article_id: str) -> str:
         articles = self.db.query(ArticleImage).filter(ArticleImage.article_id == article_id).all()
 
@@ -171,3 +206,20 @@ class ArticleRepository:
     def change_article_status(self, article: Article):
         self.db.commit()
         return article
+
+    def assign_article_category(self, article_category_form_data: ArticleCategoryAssignAndUnassignFormData):
+        article_category_model = ArticleCategory(id=str(uuid.uuid4()), article_id=article_category_form_data.article_id, category_id=article_category_form_data.category_id)
+        self.db.add(article_category_model)
+        self.db.commit()
+        self.db.refresh(article_category_model)
+
+        return article_category_model
+
+    def unassign_article_category(self, article_category_form_data: ArticleCategoryAssignAndUnassignFormData):
+        article_category = self.read_article_category_by_article_id_and_category_id(article_id=article_category_form_data.article_id, category_id=article_category_form_data.category_id)
+        if not article_category:
+            return ''
+
+        self.db.delete(article_category)
+        self.db.commit()
+        return article_category_form_data
